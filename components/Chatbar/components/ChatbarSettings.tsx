@@ -1,7 +1,9 @@
-import { IconFileExport, IconSettings } from '@tabler/icons-react';
+import { IconFileExport, IconLogout, IconSettings } from '@tabler/icons-react';
+import { signOut, useSession } from 'next-auth/react';
 import { useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
+import Image from 'next/image';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -15,6 +17,7 @@ import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
 
 export const ChatbarSettings = () => {
+  const session = useSession();
   const { t } = useTranslation('sidebar');
   const [isSettingDialogOpen, setIsSettingDialog] = useState<boolean>(false);
 
@@ -35,6 +38,12 @@ export const ChatbarSettings = () => {
     handleExportData,
     handleApiKeyChange,
   } = useContext(ChatbarContext);
+
+  const handleSignOut = () => {
+    if (session && session.data) {
+      signOut();
+    }
+  };
 
   return (
     <div className="flex flex-col items-center space-y-1 border-t border-white/20 pt-1 text-sm">
@@ -68,6 +77,26 @@ export const ChatbarSettings = () => {
           setIsSettingDialog(false);
         }}
       />
+
+      {session && session.data && (
+        <SidebarButton
+          text={'Sign out'}
+          icon={
+            session.data.user && session.data.user.image ? (
+              <Image
+                src={session.data.user.image as string}
+                alt="Avatar of yours"
+                width={32}
+                height={32}
+                style={{ borderRadius: '5px' }}
+              />
+            ) : (
+              <IconLogout size={18} />
+            )
+          }
+          onClick={handleSignOut}
+        />
+      )}
     </div>
   );
 };
